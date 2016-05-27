@@ -9,6 +9,6 @@ Homepage: http://www.liderahenk.org.tr
 Package: user-privilege
 Version: 1.0.0
 Architecture: any
-Depends: python3 (>= 3), cpulimit
+Depends: python3 (>= 3), cpulimit, policykit-1
 Description: LiderAhenk ahenk-user-privilege application
  Long Desc
