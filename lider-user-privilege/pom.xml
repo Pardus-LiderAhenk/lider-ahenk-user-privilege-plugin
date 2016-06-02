@@ -76,7 +76,7 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>target/classes/tr.org.liderahenk.userprivilege.cfg</file>
+									<file>target/classes/tr.org.liderahenk.user.privilege.cfg</file>
 									<type>cfg</type>
 								</artifact>
 							</artifacts>
@@ -93,10 +93,7 @@
 						<_removeheaders>Import-Service,Export-Service</_removeheaders>
 						<Bundle-SymbolicName>lider-user-privilege</Bundle-SymbolicName>
 						<Bundle-Version>1.0.0</Bundle-Version>
-						<!-- There is a bug that imports packages reside in the bundle. Here we prevent this: -->
-						<Import-Package>!tr.org.liderahenk.userprivilege.*, *</Import-Package>
-						<!-- If the plugin also have a *-db bundle, then use this line instead: -->
-						<Import-Package>tr.org.liderahenk.userprivilege.entities.*, !tr.org.liderahenk.userprivilege.*, *</Import-Package>
+						<Import-Package>!tr.org.liderahenk.user.privilege.*, *</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>

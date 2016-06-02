@@ -25,7 +25,7 @@
 
 		<!-- Profile handler -->
        	<handler
-            class="tr.org.liderahenk.userprivilege.handlers.UserPrivilegeProfileHandler"
+            class="tr.org.liderahenk.user.privilege.handlers.UserPrivilegeProfileHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile">
            <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
 		   <!-- <enabledWhen>
@@ -45,30 +45,6 @@
 		       </and>
 		    </enabledWhen> -->        
       	</handler>
-      	
-      	<!-- Task handler -->
-       <handler
-            class="tr.org.liderahenk.userprivilege.handlers.UserPrivilegeTaskHandler"
-            commandId="tr.org.liderahenk.liderconsole.commands.UserPrivilegeTask">
-           <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-		   <!-- <enabledWhen>
-				<and>
-		          <with
-		                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
-		             <equals
-		                   value="true">
-		             </equals>
-		          </with>
-				<with
-	                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-	             	<equals
-		                   value="true">
-		            </equals>
-	          	</with>
-		       </and>
-		    </enabledWhen> -->        
-      </handler>
-      
   </extension>
   
   <extension
@@ -76,49 +52,12 @@
 
 		<!-- Add menu command for "profile definition" dialog -->
 		<menuContribution
+      		allPopups="false"
             locationURI="menu:tr.org.liderahenk.liderconsole.menus.ProfileDefinition?after=additions">
  				<command
                   commandId="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile"
                   id="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile"
                   tooltip="%command.profile">
-                  <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-				  <!-- <visibleWhen>
-					   <and>
-			                <iterate operator="or">		
-			                	<or>
-							  	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSearchSelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					          	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isEntrySelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					        	</or>
-					        </iterate>
-							<with
-				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-				             	<equals
-					                   value="true">
-					            </equals>
-				          	</with>
-					    </and>
-					</visibleWhen> -->               
-           		</command>
-		</menuContribution>
-      
-      	<!-- Add extension point contribution for "task execution" dialogs -->
-		<menuContribution
-      		allPopups="false"
-            locationURI="popup:tr.org.liderahenk.liderconsole.menus.ApplyTask?after=additions">
- 				<command
-                  commandId="tr.org.liderahenk.liderconsole.commands.UserPrivilegeTask"
-                  id="tr.org.liderahenk.liderconsole.commands.UserPrivilegeTask"
-                  tooltip="%command.task">
                   <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
 				  <!-- <visibleWhen>
 					   <and>

@@ -1,0 +1,366 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+# Author: Caner Feyzullahoglu <caner.feyzullahoglu@agem.com.tr>
+"""
+Style Guide is PEP-8
+https://www.python.org/dev/peps/pep-0008/
+"""
+import json
+import os
+
+from base.plugin.abstract_plugin import AbstractPlugin, plugin_path
+
+
+class UserPrivilege(AbstractPlugin):
+    def __init__(self, profile_data, context):
+        super(AbstractPlugin, self).__init__()
+        self.profile_data = profile_data
+        self.context = context
+        self.logger = self.get_logger()
+
+        # self.logger = self.context.logger
+
+        self.polkit_action_folder_path = '/usr/share/polkit-1/actions/'
+        self.polkit_pkla_folder_path = '/etc/polkit-1/localauthority/50-local.d/'
+        self.default_action_pref = 'tr.org.pardus.mys.pkexec.'
+
+        # self.permission_file_path = self.agent_config.get("UserPolicyPlugin", "userpolicyplugin.policyfile")
+        # The below line was like above line at old version.
+        self.permission_file_path = '/etc/ahenk/userpolicies'
+        # "permission_file"_path was being taken from a config file which has been created by "agentconfig.py"
+        # but this py is not present in new version. So I created it as a static string.
+
+    def handle_policy(self):
+        print('Handling policy')
+        self.logger.info('Handling policy.')
+        # Get username.
+        # It is actually user UID in LDAP. The message being created in PolicySubscriberImpl by using
+        # MessageFactoryImpl at server side.
+        # At agent side Plugin.py takes a message from queue as an item, finds related plugin module by using
+        # Scope (with parameters from the item such as plugin name and plugin version), puts "username" to context and
+        # triggers "handle_policy" method of related plugin.
+        username = self.context.get('username')
+
+        try:
+            result_message = ''
+
+            if username is not None:
+                self.logger.info('Getting profile data.')
+                data = json.loads(self.profile_data)
+                privilege_items = json.loads(json.dumps(data['items']))
+
+                # Lists that will keep user names for cleaning on logout
+                add_user_list = list()
+                del_user_list = list()
+                # List that will keep command paths
+                command_path_list = list()
+
+                if len(privilege_items) > 0:
+                    self.logger.info('Iterating over privilege items.')
+
+                    for item in privilege_items:
+                        cmd = item['cmd']
+                        polkit_status = item['polkitStatus']
+
+                        # Create polkit for each item
+                        if polkit_status == 'privileged':
+                            command_path = cmd.strip()
+
+                            self.logger.info('Parsing command.')
+                            command = str(self.parse_command(command_path))
+
+                            action_id = self.default_action_pref + command
+
+                            if not os.path.exists(action_id + '.policy'):
+                                self.logger.info(
+                                    'Creating action; command: ' + command + ', action_id: ' + action_id +
+                                    ', command_path: ' + command_path)
+                                self.create_action(command, action_id, command_path)
+
+                            self.logger.info(
+                                'Executing: "getent group ' + command + ' || groupadd ' + command + '"')
+                            self.execute('getent group ' + command + ' || groupadd ' + command)
+
+                            self.logger.info('Executing: "adduser ' + str(username) + ' ' + command + '"')
+                            self.execute('adduser ' + str(username) + ' ' + command)
+
+                            self.logger.info('Adding command to add_user_list')
+                            add_user_list.append(command)
+
+                            if not os.path.exists(action_id + '.pkla'):
+                                self.logger.info('Creating pkla; command: ' + command + ', action_id: ' + action_id)
+                                self.create_pkla(command, action_id)
+
+                            self.logger.info('Executing: "grep "pkexec" ' + str(command_path) + '"')
+                            (result_code, p_out, p_err) = self.execute('grep "pkexec" ' + str(command_path))
+
+                            if result_code != 0:
+                                # Get resource limit choice
+                                limit_resource_usage = item['limitResourceUsage']
+                                # Get CPU and memory usage parameters
+                                cpu = item['cpu']
+                                memory = item['memory']
+
+                                # Create wrapper command with resource limits
+                                self.logger.info('Creating wrapper command; command_path: ' + command_path +
+                                                 ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
+                                                 str(cpu) + ', memory: ' + str(memory))
+                                (wrapper_result, p_out, p_err) = self.create_wrapper_command(command_path,
+                                                                                             polkit_status,
+                                                                                             limit_resource_usage,
+                                                                                             cpu, memory,
+                                                                                             command_path_list)
+                                if wrapper_result == 0:
+                                    self.logger.info('Wrapper created successfully.')
+                                    self.logger.info('Adding item result to result_message.')
+                                    result_message += command_path + ' | Privileged | Successful, '
+                                else:
+                                    self.logger.info('Adding item result to result_message.')
+                                    result_message += command_path + ' | Privileged | Failed, '
+
+                        elif polkit_status == 'unprivileged':
+                            command_path = cmd.strip()
+
+                            self.logger.info('Parsing command.')
+                            command = str(self.parse_command(command_path))
+
+                            action_id = self.default_action_pref + command
+
+                            if not os.path.exists(action_id + '.policy'):
+                                self.logger.info('Creating action; command: ' + command + ', action_id: ' + action_id +
+                                                 ', command_path: ' + command_path)
+                                self.create_action(command, action_id, command_path)
+
+                            self.logger.info('Executing: "getent group ' + command + ' || groupadd ' + command + '"')
+                            self.execute('getent group ' + command + ' || groupadd ' + command)
+
+                            self.logger.info('Executing: "deluser ' + str(username) + ' ' + command + '"')
+                            self.execute('deluser ' + str(username) + ' ' + command)
+
+                            self.logger.info('Adding command to del_user_list')
+                            del_user_list.append(command)
+
+                            if not os.path.exists(action_id + '.pkla'):
+                                self.logger.info('Creating pkla; command: ' + command + ', action_id: ' + action_id)
+                                self.create_pkla(command, action_id)
+
+                            self.logger.info('Executing: "grep "pkexec" ' + str(command_path) + '"')
+                            (result_code, p_out, p_err) = self.execute('grep "pkexec" ' + str(command_path))
+
+                            if result_code != 0:
+                                # Get resource limit choice
+                                limit_resource_usage = item['limitResourceUsage']
+                                # Get CPU and memory usage parameters
+                                cpu = item['cpu']
+                                memory = item['memory']
+
+                                # Create wrapper command with resource limits
+                                self.logger.info('Creating wrapper command; command_path: ' + command_path +
+                                                 ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
+                                                 str(cpu) + ', memory: ' + str(memory))
+                                (wrapper_result, p_out, p_err) = self.create_wrapper_command(command_path,
+                                                                                             polkit_status,
+                                                                                             limit_resource_usage,
+                                                                                             cpu, memory,
+                                                                                             command_path_list)
+                                if wrapper_result == 0:
+                                    self.logger.info('Wrapper created successfully.')
+                                    self.logger.info('Adding item result to result_message.')
+                                    result_message += command_path + ' | Unprivileged | Successful, '
+                                else:
+                                    self.logger.info('Adding item result to result_message.')
+                                    result_message += command_path + ' | Unprivileged | Failed, '
+
+                        elif polkit_status == 'na':
+                            command_path = cmd.strip()
+
+                            self.logger.info('polkit_status is: na, no action or pkla will be created.')
+
+                            # Get resource limit choice
+                            limit_resource_usage = item['limitResourceUsage']
+                            # Get CPU and memory usage parameters
+                            cpu = item['cpu']
+                            memory = item['memory']
+
+                            # Create wrapper command with resource limits
+                            self.logger.info('Creating wrapper command; command_path: ' + command_path +
+                                             ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
+                                             str(cpu) + ', memory: ' + str(memory))
+                            (wrapper_result, p_out, p_err) = self.create_wrapper_command(command_path, polkit_status,
+                                                                                         limit_resource_usage,
+                                                                                         cpu, memory, command_path_list)
+
+                            if wrapper_result == 0:
+                                self.logger.info('Wrapper created successfully.')
+                                self.logger.info('Adding item result to result_message.')
+                                result_message += command_path + ' | Privileged | Successful, '
+                            else:
+                                self.logger.info('Adding item result to result_message.')
+                                result_message += command_path + ' | Privileged | Failed, '
+
+                self.logger.info('Getting plugin path.')
+
+                # p_path = plugin_path(self)
+                # TODO volkanla bakılacak
+                p_path = '/home/lider/git/ahenk/opt/ahenk/plugins'
+
+                self.logger.info('Creating logout files.')
+                self.create_logout_files(username, p_path, add_user_list, del_user_list, command_path_list)
+
+                self.logger.info('Creating response.')
+                self.context.create_response(self.get_message_code().POLICY_PROCESSED.value, result_message)
+
+                self.logger.info('[UserPrivilege] User Privilege profile is handled successfully.')
+
+            else:
+                self.logger.info('Creating response.')
+                self.context.create_response(self.get_message_code().POLICY_WARNING.value,
+                                             'No errors have been occurred but username is null. An User Privilege '
+                                             'profile cannot be processed without a username.')
+
+        except Exception as e:
+            self.context.create_response(self.get_message_code().POLICY_ERROR.value,
+                                         '[UserPrivilege] A problem occurred while handling User Privilege profile: '
+                                         '{0}'.format(str(e)))
+            self.logger.error(
+                '[UserPrivilege] A problem occurred while handling User Privilege profile: {0}'.format(str(e)))
+
+    def parse_command(self, command_path):
+        splitted_command_str = str(command_path).split('/')
+        return splitted_command_str[-1]
+
+    def create_action(self, command, command_id, command_path):
+        command_path += '-ahenk'
+        action_str = '<?xml version="1.0" encoding="UTF-8"?> \n' \
+                     ' <!DOCTYPE policyconfig PUBLIC \n' \
+                     ' "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" \n' \
+                     ' "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd"> \n' \
+                     ' <policyconfig> \n' \
+                     ' <action id="{action_id}"> \n' \
+                     ' <message>Please enter the password for this action</message> \n' \
+                     ' <icon_name>{cmd}</icon_name> \n' \
+                     ' <defaults> \n' \
+                     ' <allow_any>auth_admin</allow_any> \n' \
+                     ' <allow_inactive>auth_admin</allow_inactive> \n' \
+                     ' <allow_active>auth_admin</allow_active> \n' \
+                     ' </defaults> \n' \
+                     ' <annotate key="org.freedesktop.policykit.exec.path">{cmd_path}</annotate> \n' \
+                     ' <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate> \n' \
+                     ' </action>\n' \
+                     ' </policyconfig> \n'.format(action_id=command_id, cmd=command, cmd_path=command_path)
+
+        action_file_path = self.polkit_action_folder_path + command_id + '.policy'
+        action_file = open(action_file_path, 'w')
+        action_file.write(action_str)
+        action_file.close()
+
+    def create_pkla(self, command, action_id):
+        pkla_str = '[Normal Staff Permissions]\n' \
+                   'Identity=unix-group:{grp}\n' \
+                   'Action={actionId}\n' \
+                   'ResultAny=no\n' \
+                   'ResultInactive=no\n' \
+                   'ResultActive=yes\n'.format(grp=command, actionId=action_id)
+
+        pkla_file_path = self.polkit_pkla_folder_path + action_id + '.pkla'
+        pkla_file = open(pkla_file_path, 'w')
+        pkla_file.write(pkla_str)
+        pkla_file.close()
+
+    def create_wrapper_command(self, command_path, polkit_status, limit_resource_usage, cpu, memory, command_path_list):
+        self.logger.info('Executing: "' + 'mv ' + str(command_path) + ' ' + str(command_path) + '-ahenk"')
+        (result_code, p_out, p_err) = self.execute(
+            'mv ' + str(command_path) + ' ' + str(command_path) + '-ahenk')
+
+        if result_code == 0:
+            self.logger.info('Executing: "touch ' + str(command_path) + '"')
+            self.execute('touch ' + str(command_path))
+
+            self.logger.info('Executing: "chmod 755 ' + str(command_path) + '"')
+            self.execute('chmod 755 ' + str(command_path))
+
+            command_path_str = str(command_path).strip()
+
+            self.logger.info('Opening file: ' + command_path_str + ' to write.')
+            command_file = open(command_path_str, 'w')
+
+            line = 'if [ \( "$USER" = "root" \) -o \( "$USER" = "" \) ]; then \n' + str(command_path) + '-ahenk'
+            line += '\nelse\n'
+            if limit_resource_usage:
+                line += self.add_resource_limits(command_path, polkit_status, cpu, memory)
+            else:
+                if polkit_status == 'na':
+                    line = line + '\nelse\n' + str(command_path) + '-ahenk &\n'
+                else:
+                    line = line + '\nelse\n' + 'pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+            line += 'fi'
+
+            self.logger.info('Writing to newly created file: ' + command_path_str)
+            command_file.write(line)
+
+            self.logger.info('Closing file: ' + command_path_str)
+            command_file.close()
+            self.logger.info('Command created successfully ' + command_path)
+
+            self.logger.info('Adding command to command_path_list')
+            command_path_list.append(command_path)
+
+            return 0, p_out, p_err
+        else:
+            self.logger.info('Wrap could not created ' + command_path)
+            return 1, p_out, p_err
+
+    def add_resource_limits(self, command_path, polkit_status, cpu, memory):
+        self.logger.info('Adding resource limits to wrapper command.')
+        lines = ''
+        if cpu and memory is not None:
+            self.logger.info('Adding both CPU and memory limits.')
+            lines = 'ulimit -Sv ' + str(memory) + '\n'
+            if polkit_status == 'na':
+                lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
+            else:
+                lines = lines + 'nohup pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+            lines += 'U_PID=$!\n'
+            lines = lines + 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
+        elif cpu is not None:
+            self.logger.info('Adding only CPU limit.')
+            if polkit_status == 'na':
+                lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
+            else:
+                lines = lines + 'nohup pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+            lines += 'U_PID=$!\n'
+            lines = lines + 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
+        elif memory is not None:
+            self.logger.info('Adding only memory limit.')
+            lines = 'ulimit -Sv ' + str(memory) + '\n'
+            if polkit_status == 'na':
+                lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
+            else:
+                lines = lines + 'nohup pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+
+        return lines
+
+    def create_logout_files(self, username, path_of_plugin, add_user_list, del_user_list, command_path_list):
+        path_of_changes = path_of_plugin + '/user-privilege/privilege.changes'
+        if not os.path.exists(path_of_changes):
+            self.create_directory(path_of_changes)
+
+        self.logger.info('Creating JSON data for user privilege changes.')
+        data = {'added_user_list': add_user_list, 'deleted_user_list': del_user_list,
+                'command_path_list': command_path_list}
+
+        path_of_user_changes = path_of_changes + '/' + username + '.changes'
+        self.logger.info('Creating file: ' + path_of_user_changes)
+        with open(path_of_user_changes, 'w') as f:
+            self.logger.info('Writing JSON data to: ' + path_of_user_changes)
+            json.dump(data, f)
+
+        # TODO plugin klasörünün altında 'changes' klasörü oluştur,
+        # TODO buraya 'username_changes' şeklinde dosya oluştur.
+        # TODO Dosyaya JSON formatında user'ın hangi grouplara eklendiği ve hangi grouplardan
+        # TODO çıkarıldığını  yaz. adduser_list ve deluser_list listelerini kullanarak.
+
+
+def handle_policy(profile_data, context):
+    user_privilege = UserPrivilege(profile_data, context)
+    user_privilege.handle_policy()
