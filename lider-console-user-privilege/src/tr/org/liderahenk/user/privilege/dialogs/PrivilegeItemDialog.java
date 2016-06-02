@@ -81,14 +81,15 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		cmpCommand.setLayout(new GridLayout(2, false));
 
 		Label lblVendor = new Label(cmpCommand, SWT.NONE);
-		lblVendor.setText(Messages.getString("COMMAND"));
+		lblVendor.setText(Messages.getString("COMMAND_PATH"));
 
 		txtCmd = new Text(cmpCommand, SWT.BORDER);
 		txtCmd.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false));
 		if (item != null && item.getCmd() != null) {
 			txtCmd.setText(item.getCmd());
 		}
-
+		txtCmd.setMessage(Messages.getString("EG_FIREFOX"));
+		
 		Label lblPrivilege = new Label(cmpCommand, SWT.NONE);
 		lblPrivilege.setText(Messages.getString("PRIVILEGE"));
 
@@ -118,7 +119,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		cmpRadio.setLayout(layout);
 
 		btnLimitUsage = new Button(cmpRadio, SWT.RADIO);
-		btnLimitUsage.setText(Messages.getString("LIMIT_USAGE"));
+		btnLimitUsage.setText(Messages.getString("LIMIT_RESOURCE_USAGE"));
 		if (item != null && item.getLimitResourceUsage()) {
 			btnLimitUsage.setSelection(true);
 		}
@@ -233,7 +234,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		setReturnCode(OK);
 
 		if (txtCmd.getText().isEmpty()) {
-			Notifier.error(null, Messages.getString("PLEASE_ENTER_CMD"));
+			Notifier.error(null, Messages.getString("PLEASE_ENTER_CMD_PATH"));
 		} else if (btnLimitUsage.getSelection() && txtCpu.getText().isEmpty() && txtMemory.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("FILL_AT_LEAST_ONE_RESOURCE_USAGE_VALUE"));
 			return;

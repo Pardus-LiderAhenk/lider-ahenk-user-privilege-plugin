@@ -235,7 +235,7 @@ public class UserPrivilegeProfileDialog implements IProfileDialog {
 	}
 
 	private void createTableColumns() {
-		TableViewerColumn cmdCol = createTableViewerColumn(tableViewer, Messages.getString("COMMAND"), 200);
+		TableViewerColumn cmdCol = createTableViewerColumn(tableViewer, Messages.getString("COMMAND_PATH"), 200);
 		cmdCol.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -251,7 +251,7 @@ public class UserPrivilegeProfileDialog implements IProfileDialog {
 			}
 		});
 
-		TableViewerColumn limitResourceCol = createTableViewerColumn(tableViewer, Messages.getString("LIMIT_RESOURCE"),
+		TableViewerColumn limitResourceCol = createTableViewerColumn(tableViewer, Messages.getString("LIMIT_RESOURCE_USAGE"),
 				200);
 		limitResourceCol.setLabelProvider(new ColumnLabelProvider() {
 			@Override
