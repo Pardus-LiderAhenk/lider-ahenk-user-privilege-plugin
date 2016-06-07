@@ -29,8 +29,8 @@
     </feature>
 
     <feature name="lider-user-privilege-bundles" version="${project.version}">
-		<bundle>mvn:tr.org.liderahenk/lider-user-privilege/${project.version}</bundle>
-		<configfile finalname="/etc/tr.org.liderahenk.userprivilege.cfg">mvn:tr.org.liderahenk/lider-user-privilege/${project.version}/cfg</configfile>
+    	<configfile finalname="/etc/tr.org.liderahenk.user.privilege.cfg">mvn:${groupId}/lider-user-privilege/${project.version}/cfg</configfile>
+		<bundle start-level="90">mvn:tr.org.liderahenk/lider-user-privilege/${project.version}</bundle>
     </feature>
 
     <feature name="lider-user-privilege-dependencies" version="${project.version}">
