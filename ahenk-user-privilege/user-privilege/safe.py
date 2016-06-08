@@ -21,9 +21,9 @@ class UserPrivilegeSafeMode(AbstractPlugin):
     def handle_safe_mode(self):
         self.logger.info('Handling safe mode.')
 
-        # TODO volkanla bakılacak
-        p_path = '/home/lider/git/ahenk/opt/ahenk/plugins'
-        privilege_file = p_path + '/user-privilege/privilege.changes/' + self.username + '.changes'
+        self.logger.info('Getting plugin path.')
+        p_path = self.Ahenk.plugins_path()
+        privilege_file = p_path + 'user-privilege/privilege.changes/' + self.username + '.changes'
 
         self.logger.info('Reading privilege_file: ' + privilege_file)
         with open(privilege_file) as data_file:
