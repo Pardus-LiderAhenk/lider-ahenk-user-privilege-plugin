@@ -202,7 +202,9 @@ class UserPrivilege(AbstractPlugin):
 
                 # p_path = plugin_path(self)
                 # TODO volkanla bakılacak
-                p_path = '/home/lider/git/ahenk/opt/ahenk/plugins'
+                self.Ahenk.plugins_path()
+                # p_path = '/home/lider/git/ahenk/opt/ahenk/plugins'
+                p_path = self.Ahenk.plugins_path()
 
                 self.logger.info('Creating logout files.')
                 self.create_logout_files(username, p_path, add_user_list, del_user_list, command_path_list)
@@ -341,7 +343,7 @@ class UserPrivilege(AbstractPlugin):
         return lines
 
     def create_logout_files(self, username, path_of_plugin, add_user_list, del_user_list, command_path_list):
-        path_of_changes = path_of_plugin + '/user-privilege/privilege.changes'
+        path_of_changes = path_of_plugin + 'user-privilege/privilege.changes'
         if not os.path.exists(path_of_changes):
             self.create_directory(path_of_changes)
 
@@ -354,11 +356,6 @@ class UserPrivilege(AbstractPlugin):
         with open(path_of_user_changes, 'w') as f:
             self.logger.info('Writing JSON data to: ' + path_of_user_changes)
             json.dump(data, f)
-
-        # TODO plugin klasörünün altında 'changes' klasörü oluştur,
-        # TODO buraya 'username_changes' şeklinde dosya oluştur.
-        # TODO Dosyaya JSON formatında user'ın hangi grouplara eklendiği ve hangi grouplardan
-        # TODO çıkarıldığını  yaz. adduser_list ve deluser_list listelerini kullanarak.
 
 
 def handle_policy(profile_data, context):
