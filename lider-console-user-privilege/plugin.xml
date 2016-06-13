@@ -57,7 +57,8 @@
  				<command
                   commandId="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile"
                   id="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile"
-                  tooltip="%command.profile">
+                  tooltip="%command.profile"
+                  icon="icons/16/user-privilege.png">
                   <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
 				  <!-- <visibleWhen>
 					   <and>

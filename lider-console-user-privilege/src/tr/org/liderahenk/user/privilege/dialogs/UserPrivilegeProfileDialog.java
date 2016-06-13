@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.liderconsole.core.constants.LiderConstants;
 import tr.org.liderahenk.liderconsole.core.dialogs.IProfileDialog;
+import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.model.Profile;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
@@ -39,9 +40,9 @@ import tr.org.liderahenk.user.privilege.model.PrivilegeItem;
 
 /**
  * Profile dialog for User Privilege plugin. A User Privilege profile may has
- * many detail items that keep Linux commands and their Polkit and resource limit values.
- * This dialog have a table of these items and buttons for CRUD operations on
- * them.
+ * many detail items that keep Linux commands and their Polkit and resource
+ * limit values. This dialog have a table of these items and buttons for CRUD
+ * operations on them.
  * 
  * @author <a href="mailto:caner.feyzullahoglu@agem.com.tr">Caner
  *         Feyzullahoglu</a>
@@ -159,6 +160,19 @@ public class UserPrivilegeProfileDialog implements IProfileDialog {
 		});
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public void validateBeforeSave() throws ValidationException {
+		Object o = tableViewer.getInput();
+		if (o == null) {
+			throw new ValidationException(Messages.getString("DEFINE_AT_LEAST_ONE_PRIVILEGE"));
+		}
+		List<PrivilegeItem> items = (List<PrivilegeItem>) o;
+		if (items.size() == 0) {
+			throw new ValidationException(Messages.getString("DEFINE_AT_LEAST_ONE_PRIVILEGE"));
+		}
+	}
+
 	/**
 	 * Create add, edit, delete buttons for the table
 	 * 
@@ -251,8 +265,8 @@ public class UserPrivilegeProfileDialog implements IProfileDialog {
 			}
 		});
 
-		TableViewerColumn limitResourceCol = createTableViewerColumn(tableViewer, Messages.getString("LIMIT_RESOURCE_USAGE"),
-				200);
+		TableViewerColumn limitResourceCol = createTableViewerColumn(tableViewer,
+				Messages.getString("LIMIT_RESOURCE_USAGE"), 200);
 		limitResourceCol.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
