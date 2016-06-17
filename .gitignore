@@ -8,6 +8,10 @@ target/**
 .settings/**
 workspace/
 workspace/**
+*.deb
+*.changes
+ahenk-user-privilege/debian/ahenk-user-privilege/
+ahenk-user-privilege/debian/ahenk-user-privilege/**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -65,9 +69,6 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
-
-# PyBuilder
-target/
 
 #Ipython Notebook
 .ipynb_checkpoints
