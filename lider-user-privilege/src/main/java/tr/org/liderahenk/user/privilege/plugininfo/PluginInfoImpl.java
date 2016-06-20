@@ -29,6 +29,8 @@ public class PluginInfoImpl implements IPluginInfo {
 	private Boolean userOriented;
 
 	private Boolean policyPlugin;
+	
+	private Boolean taskPlugin;
 
 	private Boolean xbased;
 
@@ -40,7 +42,7 @@ public class PluginInfoImpl implements IPluginInfo {
 	public String toString() {
 		return "PluginInfoImpl [pluginName=" + pluginName + ", pluginVersion=" + pluginVersion + ", description="
 				+ description + ", machineOriented=" + machineOriented + ", userOriented=" + userOriented
-				+ ", policyPlugin=" + policyPlugin + ", xbased=" + xbased + "]";
+				+ ", policyPlugin=" + policyPlugin + ", taskPlugin=" + taskPlugin + ", xbased=" + xbased + "]";
 	}
 
 	public String prettyPrintConfig() {
@@ -112,6 +114,15 @@ public class PluginInfoImpl implements IPluginInfo {
 
 	public void setXbased(Boolean xbased) {
 		this.xbased = xbased;
+	}
+
+	@Override
+	public Boolean getTaskPlugin() {
+		return taskPlugin;
+	}
+
+	public void setTaskPlugin(Boolean taskPlugin) {
+		this.taskPlugin = taskPlugin;
 	}
 
 }
