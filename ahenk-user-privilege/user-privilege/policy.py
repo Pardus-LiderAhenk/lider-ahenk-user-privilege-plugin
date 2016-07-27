@@ -113,10 +113,10 @@ class UserPrivilege(AbstractPlugin):
                                 if wrapper_result == 0:
                                     self.logger.info('Wrapper created successfully.')
                                     self.logger.info('Adding item result to result_message.')
-                                    result_message += command_path + ' | Privileged | Successful, '
+                                    result_message += command_path + ' | Ayrıcalıklı | Başarılı, '
                                 else:
                                     self.logger.info('Adding item result to result_message.')
-                                    result_message += command_path + ' | Privileged | Failed, '
+                                    result_message += command_path + ' | Ayrıcalıklı | Başarısız, '
 
                         elif polkit_status == 'unprivileged':
                             command_path = cmd.strip()
@@ -166,10 +166,10 @@ class UserPrivilege(AbstractPlugin):
                                 if wrapper_result == 0:
                                     self.logger.info('Wrapper created successfully.')
                                     self.logger.info('Adding item result to result_message.')
-                                    result_message += command_path + ' | Unprivileged | Successful, '
+                                    result_message += command_path + ' | Ayrıcalıksız | Başarılı, '
                                 else:
                                     self.logger.info('Adding item result to result_message.')
-                                    result_message += command_path + ' | Unprivileged | Failed, '
+                                    result_message += command_path + ' | Ayrıcalıksız | Başarısız, '
 
                         elif polkit_status == 'na':
                             command_path = cmd.strip()
@@ -193,10 +193,10 @@ class UserPrivilege(AbstractPlugin):
                             if wrapper_result == 0:
                                 self.logger.info('Wrapper created successfully.')
                                 self.logger.info('Adding item result to result_message.')
-                                result_message += command_path + ' | Privileged | Successful, '
+                                result_message += command_path + ' | Ayrıcalıklı | Başarılı, '
                             else:
                                 self.logger.info('Adding item result to result_message.')
-                                result_message += command_path + ' | Privileged | Failed, '
+                                result_message += command_path + ' | Ayrıcalıklı | Başarısız, '
 
                 self.logger.info('Getting plugin path.')
 
@@ -210,20 +210,18 @@ class UserPrivilege(AbstractPlugin):
                 self.create_logout_files(username, p_path, add_user_list, del_user_list, command_path_list)
 
                 self.logger.info('Creating response.')
-                self.context.create_response(self.get_message_code().POLICY_PROCESSED.value, result_message)
+                self.context.create_response(code=self.get_message_code().POLICY_PROCESSED.value, message=result_message)
 
                 self.logger.info('[UserPrivilege] User Privilege profile is handled successfully.')
 
             else:
                 self.logger.info('Creating response.')
-                self.context.create_response(self.get_message_code().POLICY_WARNING.value,
-                                             'No errors have been occurred but username is null. An User Privilege '
-                                             'profile cannot be processed without a username.')
+                self.context.create_response(code=self.get_message_code().POLICY_WARNING.value,
+                                             message='Kullanıcı adı olmadan USER PRIVILEGE profili çalıştırılamaz.')
 
         except Exception as e:
-            self.context.create_response(self.get_message_code().POLICY_ERROR.value,
-                                         '[UserPrivilege] A problem occurred while handling User Privilege profile: '
-                                         '{0}'.format(str(e)))
+            self.context.create_response(code=self.get_message_code().POLICY_ERROR.value,
+                                         message='USER PRIVILEGE profili uygulanırken bir hata oluştu.')
             self.logger.error(
                 '[UserPrivilege] A problem occurred while handling User Privilege profile: {0}'.format(str(e)))
 
