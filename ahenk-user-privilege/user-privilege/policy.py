@@ -8,7 +8,7 @@ https://www.python.org/dev/peps/pep-0008/
 import json
 import os
 
-from base.plugin.abstract_plugin import AbstractPlugin, plugin_path
+from base.plugin.abstract_plugin import AbstractPlugin
 
 
 class UserPrivilege(AbstractPlugin):
@@ -29,6 +29,14 @@ class UserPrivilege(AbstractPlugin):
         self.permission_file_path = '/etc/ahenk/userpolicies'
         # "permission_file"_path was being taken from a config file which has been created by "agentconfig.py"
         # but this py is not present in new version. So I created it as a static string.
+
+    def limit_ahenk(self, item):
+
+        if self.has_attr_json(item, 'cpu') and item['cpu'] is not None and item['cpu'] is not '':
+            self.logger.debug('[UserPrivilege] Limiting ahenk cpu usage. Cpu limit value: {0}'.format(item['cpu']))
+            self.execute('cpulimit -p {0} -l {1} -z &'.format(str(self.Ahenk.get_pid_number()), str(item['cpu'])),
+                         result=False)
+            self.logger.debug('[UserPrivilege] Limited ahenk cpu usage. Cpu limit value: {0}'.format(item['cpu']))
 
     def handle_policy(self):
         print('Handling policy')
@@ -60,6 +68,10 @@ class UserPrivilege(AbstractPlugin):
 
                     for item in privilege_items:
                         cmd = item['cmd']
+                        if cmd == "/opt/ahenk/ahenkd":
+                            self.limit_ahenk(item)
+                            continue
+
                         polkit_status = item['polkitStatus']
 
                         # Create polkit for each item
