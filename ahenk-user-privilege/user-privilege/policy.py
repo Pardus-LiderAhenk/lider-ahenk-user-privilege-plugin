@@ -32,7 +32,7 @@ class UserPrivilege(AbstractPlugin):
 
     def handle_policy(self):
         print('Handling policy')
-        self.logger.info('Handling policy.')
+        self.logger.debug('[UserPrivilege] Handling policy.')
         # Get username.
         # It is actually user UID in LDAP. The message being created in PolicySubscriberImpl by using
         # MessageFactoryImpl at server side.
@@ -45,7 +45,7 @@ class UserPrivilege(AbstractPlugin):
             result_message = ''
 
             if username is not None:
-                self.logger.info('Getting profile data.')
+                self.logger.debug('[UserPrivilege] Getting profile data.')
                 data = json.loads(self.profile_data)
                 privilege_items = json.loads(json.dumps(data['items']))
 
@@ -56,7 +56,7 @@ class UserPrivilege(AbstractPlugin):
                 command_path_list = list()
 
                 if len(privilege_items) > 0:
-                    self.logger.info('Iterating over privilege items.')
+                    self.logger.debug('[UserPrivilege] Iterating over privilege items.')
 
                     for item in privilege_items:
                         cmd = item['cmd']
@@ -66,32 +66,34 @@ class UserPrivilege(AbstractPlugin):
                         if polkit_status == 'privileged':
                             command_path = cmd.strip()
 
-                            self.logger.info('Parsing command.')
+                            self.logger.debug('[UserPrivilege] Parsing command.')
                             command = str(self.parse_command(command_path))
 
                             action_id = self.default_action_pref + command
 
                             if not os.path.exists(action_id + '.policy'):
-                                self.logger.info(
-                                    'Creating action; command: ' + command + ', action_id: ' + action_id +
+                                self.logger.debug(
+                                    '[UserPrivilege] Creating action; command: ' + command + ', action_id: ' + action_id +
                                     ', command_path: ' + command_path)
                                 self.create_action(command, action_id, command_path)
 
-                            self.logger.info(
-                                'Executing: "getent group ' + command + ' || groupadd ' + command + '"')
+                            self.logger.debug(
+                                '[UserPrivilege] Executing: "getent group ' + command + ' || groupadd ' + command + '"')
                             self.execute('getent group ' + command + ' || groupadd ' + command)
 
-                            self.logger.info('Executing: "adduser ' + str(username) + ' ' + command + '"')
+                            self.logger.debug(
+                                '[UserPrivilege] Executing: "adduser ' + str(username) + ' ' + command + '"')
                             self.execute('adduser ' + str(username) + ' ' + command)
 
-                            self.logger.info('Adding command to add_user_list')
+                            self.logger.debug('[UserPrivilege] Adding command to add_user_list')
                             add_user_list.append(command)
 
                             if not os.path.exists(action_id + '.pkla'):
-                                self.logger.info('Creating pkla; command: ' + command + ', action_id: ' + action_id)
+                                self.logger.debug(
+                                    '[UserPrivilege] Creating pkla; command: ' + command + ', action_id: ' + action_id)
                                 self.create_pkla(command, action_id)
 
-                            self.logger.info('Executing: "grep "pkexec" ' + str(command_path) + '"')
+                            self.logger.debug('[UserPrivilege] Executing: "grep "pkexec" ' + str(command_path) + '"')
                             (result_code, p_out, p_err) = self.execute('grep "pkexec" ' + str(command_path))
 
                             if result_code != 0:
@@ -102,49 +104,54 @@ class UserPrivilege(AbstractPlugin):
                                 memory = item['memory']
 
                                 # Create wrapper command with resource limits
-                                self.logger.info('Creating wrapper command; command_path: ' + command_path +
-                                                 ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
-                                                 str(cpu) + ', memory: ' + str(memory))
+                                self.logger.debug(
+                                    '[UserPrivilege] Creating wrapper command; command_path: ' + command_path +
+                                    ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
+                                    str(cpu) + ', memory: ' + str(memory))
                                 (wrapper_result, p_out, p_err) = self.create_wrapper_command(command_path,
                                                                                              polkit_status,
                                                                                              limit_resource_usage,
                                                                                              cpu, memory,
                                                                                              command_path_list)
                                 if wrapper_result == 0:
-                                    self.logger.info('Wrapper created successfully.')
-                                    self.logger.info('Adding item result to result_message.')
+                                    self.logger.debug('[UserPrivilege] Wrapper created successfully.')
+                                    self.logger.debug('[UserPrivilege] Adding item result to result_message.')
                                     result_message += command_path + ' | Ayrıcalıklı | Başarılı, '
                                 else:
-                                    self.logger.info('Adding item result to result_message.')
+                                    self.logger.debug('[UserPrivilege] Adding item result to result_message.')
                                     result_message += command_path + ' | Ayrıcalıklı | Başarısız, '
 
                         elif polkit_status == 'unprivileged':
                             command_path = cmd.strip()
 
-                            self.logger.info('Parsing command.')
+                            self.logger.debug('[UserPrivilege] Parsing command.')
                             command = str(self.parse_command(command_path))
 
                             action_id = self.default_action_pref + command
 
                             if not os.path.exists(action_id + '.policy'):
-                                self.logger.info('Creating action; command: ' + command + ', action_id: ' + action_id +
-                                                 ', command_path: ' + command_path)
+                                self.logger.debug(
+                                    '[UserPrivilege] Creating action; command: ' + command + ', action_id: ' + action_id +
+                                    ', command_path: ' + command_path)
                                 self.create_action(command, action_id, command_path)
 
-                            self.logger.info('Executing: "getent group ' + command + ' || groupadd ' + command + '"')
+                            self.logger.debug(
+                                '[UserPrivilege] Executing: "getent group ' + command + ' || groupadd ' + command + '"')
                             self.execute('getent group ' + command + ' || groupadd ' + command)
 
-                            self.logger.info('Executing: "deluser ' + str(username) + ' ' + command + '"')
+                            self.logger.debug(
+                                '[UserPrivilege] Executing: "deluser ' + str(username) + ' ' + command + '"')
                             self.execute('deluser ' + str(username) + ' ' + command)
 
-                            self.logger.info('Adding command to del_user_list')
+                            self.logger.debug('[UserPrivilege] Adding command to del_user_list')
                             del_user_list.append(command)
 
                             if not os.path.exists(action_id + '.pkla'):
-                                self.logger.info('Creating pkla; command: ' + command + ', action_id: ' + action_id)
+                                self.logger.debug(
+                                    '[UserPrivilege] Creating pkla; command: ' + command + ', action_id: ' + action_id)
                                 self.create_pkla(command, action_id)
 
-                            self.logger.info('Executing: "grep "pkexec" ' + str(command_path) + '"')
+                            self.logger.debug('[UserPrivilege] Executing: "grep "pkexec" ' + str(command_path) + '"')
                             (result_code, p_out, p_err) = self.execute('grep "pkexec" ' + str(command_path))
 
                             if result_code != 0:
@@ -155,26 +162,28 @@ class UserPrivilege(AbstractPlugin):
                                 memory = item['memory']
 
                                 # Create wrapper command with resource limits
-                                self.logger.info('Creating wrapper command; command_path: ' + command_path +
-                                                 ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
-                                                 str(cpu) + ', memory: ' + str(memory))
+                                self.logger.debug(
+                                    '[UserPrivilege] Creating wrapper command; command_path: ' + command_path +
+                                    ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
+                                    str(cpu) + ', memory: ' + str(memory))
                                 (wrapper_result, p_out, p_err) = self.create_wrapper_command(command_path,
                                                                                              polkit_status,
                                                                                              limit_resource_usage,
                                                                                              cpu, memory,
                                                                                              command_path_list)
                                 if wrapper_result == 0:
-                                    self.logger.info('Wrapper created successfully.')
-                                    self.logger.info('Adding item result to result_message.')
+                                    self.logger.debug('[UserPrivilege] Wrapper created successfully.')
+                                    self.logger.debug('[UserPrivilege] Adding item result to result_message.')
                                     result_message += command_path + ' | Ayrıcalıksız | Başarılı, '
                                 else:
-                                    self.logger.info('Adding item result to result_message.')
+                                    self.logger.debug('[UserPrivilege] Adding item result to result_message.')
                                     result_message += command_path + ' | Ayrıcalıksız | Başarısız, '
 
                         elif polkit_status == 'na':
                             command_path = cmd.strip()
 
-                            self.logger.info('polkit_status is: na, no action or pkla will be created.')
+                            self.logger.debug(
+                                '[UserPrivilege] polkit_status is: na, no action or pkla will be created.')
 
                             # Get resource limit choice
                             limit_resource_usage = item['limitResourceUsage']
@@ -183,39 +192,37 @@ class UserPrivilege(AbstractPlugin):
                             memory = item['memory']
 
                             # Create wrapper command with resource limits
-                            self.logger.info('Creating wrapper command; command_path: ' + command_path +
-                                             ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
-                                             str(cpu) + ', memory: ' + str(memory))
+                            self.logger.debug(
+                                '[UserPrivilege] Creating wrapper command; command_path: ' + command_path +
+                                ', limit_resource_usage: ' + str(limit_resource_usage) + ', cpu: ' +
+                                str(cpu) + ', memory: ' + str(memory))
                             (wrapper_result, p_out, p_err) = self.create_wrapper_command(command_path, polkit_status,
                                                                                          limit_resource_usage,
                                                                                          cpu, memory, command_path_list)
 
                             if wrapper_result == 0:
-                                self.logger.info('Wrapper created successfully.')
-                                self.logger.info('Adding item result to result_message.')
+                                self.logger.debug('[UserPrivilege] Wrapper created successfully.')
+                                self.logger.debug('[UserPrivilege] Adding item result to result_message.')
                                 result_message += command_path + ' | Ayrıcalıklı | Başarılı, '
                             else:
-                                self.logger.info('Adding item result to result_message.')
+                                self.logger.debug('[UserPrivilege] Adding item result to result_message.')
                                 result_message += command_path + ' | Ayrıcalıklı | Başarısız, '
 
-                self.logger.info('Getting plugin path.')
+                self.logger.debug('[UserPrivilege] Getting plugin path.')
 
-                # p_path = plugin_path(self)
-                # TODO volkanla bakılacak
-                self.Ahenk.plugins_path()
-                # p_path = '/home/lider/git/ahenk/opt/ahenk/plugins'
                 p_path = self.Ahenk.plugins_path()
 
-                self.logger.info('Creating logout files.')
+                self.logger.debug('[UserPrivilege] Creating logout files.')
                 self.create_logout_files(username, p_path, add_user_list, del_user_list, command_path_list)
 
-                self.logger.info('Creating response.')
-                self.context.create_response(code=self.get_message_code().POLICY_PROCESSED.value, message=result_message)
+                self.logger.debug('[UserPrivilege] Creating response.')
+                self.context.create_response(code=self.get_message_code().POLICY_PROCESSED.value,
+                                             message=result_message)
 
-                self.logger.info('[UserPrivilege] User Privilege profile is handled successfully.')
+                self.logger.debug('[UserPrivilege] User Privilege profile is handled successfully.')
 
             else:
-                self.logger.info('Creating response.')
+                self.logger.debug('[UserPrivilege] Creating response.')
                 self.context.create_response(code=self.get_message_code().POLICY_WARNING.value,
                                              message='Kullanıcı adı olmadan USER PRIVILEGE profili çalıştırılamaz.')
 
@@ -268,53 +275,54 @@ class UserPrivilege(AbstractPlugin):
         pkla_file.close()
 
     def create_wrapper_command(self, command_path, polkit_status, limit_resource_usage, cpu, memory, command_path_list):
-        self.logger.info('Executing: "' + 'mv ' + str(command_path) + ' ' + str(command_path) + '-ahenk"')
+        self.logger.debug(
+            '[UserPrivilege] Executing: "' + 'mv ' + str(command_path) + ' ' + str(command_path) + '-ahenk"')
         (result_code, p_out, p_err) = self.execute(
             'mv ' + str(command_path) + ' ' + str(command_path) + '-ahenk')
 
         if result_code == 0:
-            self.logger.info('Executing: "touch ' + str(command_path) + '"')
+            self.logger.debug('[UserPrivilege] Executing: "touch ' + str(command_path) + '"')
             self.execute('touch ' + str(command_path))
 
-            self.logger.info('Executing: "chmod 755 ' + str(command_path) + '"')
+            self.logger.debug('[UserPrivilege] Executing: "chmod 755 ' + str(command_path) + '"')
             self.execute('chmod 755 ' + str(command_path))
 
             command_path_str = str(command_path).strip()
 
-            self.logger.info('Opening file: ' + command_path_str + ' to write.')
+            self.logger.debug('[UserPrivilege] Opening file: ' + command_path_str + ' to write.')
             command_file = open(command_path_str, 'w')
 
             line = 'if [ \( "$USER" = "root" \) -o \( "$USER" = "" \) ]; then \n' + str(command_path) + '-ahenk'
-            line += '\nelse\n'
             if limit_resource_usage:
+                line += '\nelse\n'
                 line += self.add_resource_limits(command_path, polkit_status, cpu, memory)
             else:
                 if polkit_status == 'na':
                     line = line + '\nelse\n' + str(command_path) + '-ahenk &\n'
                 else:
-                    line = line + '\nelse\n' + 'pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+                    line = line + '\nelse\n' + 'pkexec --user $USER ' + str(command_path) + '-ahenk\n'
             line += 'fi'
 
-            self.logger.info('Writing to newly created file: ' + command_path_str)
+            self.logger.debug('[UserPrivilege] Writing to newly created file: ' + command_path_str)
             command_file.write(line)
 
-            self.logger.info('Closing file: ' + command_path_str)
+            self.logger.debug('[UserPrivilege] Closing file: ' + command_path_str)
             command_file.close()
-            self.logger.info('Command created successfully ' + command_path)
+            self.logger.debug('[UserPrivilege] Command created successfully ' + command_path)
 
-            self.logger.info('Adding command to command_path_list')
+            self.logger.debug('[UserPrivilege] Adding command to command_path_list')
             command_path_list.append(command_path)
 
             return 0, p_out, p_err
         else:
-            self.logger.info('Wrap could not created ' + command_path)
+            self.logger.debug('[UserPrivilege] Wrap could not created ' + command_path)
             return 1, p_out, p_err
 
     def add_resource_limits(self, command_path, polkit_status, cpu, memory):
-        self.logger.info('Adding resource limits to wrapper command.')
+        self.logger.debug('[UserPrivilege] Adding resource limits to wrapper command.')
         lines = ''
         if cpu and memory is not None:
-            self.logger.info('Adding both CPU and memory limits.')
+            self.logger.debug('[UserPrivilege] Adding both CPU and memory limits.')
             lines = 'ulimit -Sv ' + str(memory) + '\n'
             if polkit_status == 'na':
                 lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
@@ -323,7 +331,7 @@ class UserPrivilege(AbstractPlugin):
             lines += 'U_PID=$!\n'
             lines = lines + 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
         elif cpu is not None:
-            self.logger.info('Adding only CPU limit.')
+            self.logger.debug('[UserPrivilege] Adding only CPU limit.')
             if polkit_status == 'na':
                 lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
             else:
@@ -331,7 +339,7 @@ class UserPrivilege(AbstractPlugin):
             lines += 'U_PID=$!\n'
             lines = lines + 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
         elif memory is not None:
-            self.logger.info('Adding only memory limit.')
+            self.logger.debug('[UserPrivilege] Adding only memory limit.')
             lines = 'ulimit -Sv ' + str(memory) + '\n'
             if polkit_status == 'na':
                 lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
@@ -345,14 +353,14 @@ class UserPrivilege(AbstractPlugin):
         if not os.path.exists(path_of_changes):
             self.create_directory(path_of_changes)
 
-        self.logger.info('Creating JSON data for user privilege changes.')
+        self.logger.debug('[UserPrivilege] Creating JSON data for user privilege changes.')
         data = {'added_user_list': add_user_list, 'deleted_user_list': del_user_list,
                 'command_path_list': command_path_list}
 
         path_of_user_changes = path_of_changes + '/' + username + '.changes'
-        self.logger.info('Creating file: ' + path_of_user_changes)
+        self.logger.debug('[UserPrivilege] Creating file: ' + path_of_user_changes)
         with open(path_of_user_changes, 'w') as f:
-            self.logger.info('Writing JSON data to: ' + path_of_user_changes)
+            self.logger.debug('[UserPrivilege] Writing JSON data to: ' + path_of_user_changes)
             json.dump(data, f)
 
 
