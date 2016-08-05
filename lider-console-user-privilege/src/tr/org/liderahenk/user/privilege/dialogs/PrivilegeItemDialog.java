@@ -90,7 +90,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			txtCmd.setText(item.getCmd());
 		}
 		txtCmd.setMessage(Messages.getString("EG_FIREFOX"));
-		
+
 		Label lblPrivilege = new Label(cmpCommand, SWT.NONE);
 		lblPrivilege.setText(Messages.getString("PRIVILEGE"));
 
@@ -114,46 +114,42 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		} else {
 			cmbPrivilege.select(0);
 		}
-		
-		
+
 		cmbPrivilege.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
-				if(((Combo) e.getSource()).getSelectionIndex()==1){
-					
+
+				if (((Combo) e.getSource()).getSelectionIndex() == 1) {
+
 					btnLimitUsage.setSelection(false);
 					btnNoLimit.setSelection(true);
-					
+
 					btnLimitUsage.setEnabled(false);
 					btnNoLimit.setEnabled(false);
-					
+
 					txtCpu.setEnabled(false);
 					txtMemory.setEnabled(false);
-					
+
 					txtCpu.setText("");
 					txtMemory.setText("");
-				}
-				else{
+				} else {
 
 					btnLimitUsage.setSelection(true);
 					btnNoLimit.setSelection(false);
-					
+
 					btnLimitUsage.setEnabled(true);
 					btnNoLimit.setEnabled(true);
-					
+
 					txtCpu.setEnabled(true);
 					txtMemory.setEnabled(true);
-					
 				}
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-		
 
 		Composite cmpRadio = new Composite(cmpMain, SWT.NONE);
 		GridLayout layout = new GridLayout(2, true);
@@ -179,11 +175,10 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 				if (btnNoLimit.getSelection()) {
 					txtCpu.setEnabled(false);
 					txtMemory.setEnabled(false);
-					
+
 					txtCpu.setText("");
 					txtMemory.setText("");
-					
-					
+
 				} else {
 					txtCpu.setEnabled(true);
 					txtMemory.setEnabled(true);
@@ -194,75 +189,37 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 			}
 		});
-		
-		
-		//limit only ahenk service
-		
+
+		// limit only ahenk service
+
 		Composite ahenkResource = new Composite(cmpMain, SWT.NONE);
 		ahenkResource.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		ahenkResource.setLayout(new GridLayout(2, false));
-		
+
 		Label ahenkResourceUsage = new Label(ahenkResource, SWT.NONE);
-		ahenkResourceUsage.setText(Messages.getString("AHENK_RESOURCE_USAGE_VALUES"));
-		
+		ahenkResourceUsage.setText(Messages.getString("LIMIT_AHENK"));
+
 		btnCheckBoxAhenkLimit = new Button(ahenkResource, SWT.CHECK);
 		btnCheckBoxAhenkLimit.setText("");
-		
-		
+
 		btnCheckBoxAhenkLimit.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
-				if (((Button) e.getSource()).getSelection()==true){
-					txtCmd.setText("/opt/ahenk/ahenkd.py");
-					txtCmd.setEnabled(false);
-					
-					cmbPrivilege.select(2);
-					cmbPrivilege.setEnabled(false);
-					
-					btnLimitUsage.setSelection(true);
-					btnNoLimit.setSelection(false);
-					
-					btnLimitUsage.setEnabled(false);
-					btnNoLimit.setEnabled(false);
-					
-					txtCpu.setEnabled(true);
-					txtMemory.setEnabled(true);
-					
+
+				if (((Button) e.getSource()).getSelection() == true) {
+					restrictAhenkSelect();
+				} else {
+					restrictAhenkDeselect();
 				}
-				else{
-					txtCmd.setText("");
-					txtCmd.setEnabled(true);
-					
-					cmbPrivilege.select(2);
-					cmbPrivilege.setEnabled(true);
-					
-					btnLimitUsage.setSelection(false);
-					btnNoLimit.setSelection(true);
-					
-					
-					btnLimitUsage.setEnabled(true);
-					btnNoLimit.setEnabled(true);
-					
-					txtCpu.setEnabled(false);
-					txtMemory.setEnabled(false);
-					
-					txtCpu.setText("");
-					txtMemory.setText("");
-					
-				}
-				
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				
+
 			}
 		});
 
-		
-		
 		Composite cmpResource = new Composite(cmpMain, SWT.NONE);
 		cmpResource.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		cmpResource.setLayout(new GridLayout(2, false));
@@ -338,14 +295,58 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			txtMemory.setEnabled(false);
 		}
 
+		if (item != null && item.getCmd() != null) {
+			txtCmd.setText(item.getCmd());
+			if ("/opt/ahenk/ahenkd".equals(item.getCmd())) {
+				System.out.println("komut ahenk");
+				btnCheckBoxAhenkLimit.setSelection(true);
+				restrictAhenkSelect();
+			}
+		}
+
 		return cmpMain;
+	}
+
+	private void restrictAhenkSelect() {
+		txtCmd.setText("/opt/ahenk/ahenkd");
+		txtCmd.setEnabled(false);
+
+		cmbPrivilege.select(2);
+		cmbPrivilege.setEnabled(false);
+
+		btnLimitUsage.setSelection(true);
+		btnNoLimit.setSelection(false);
+
+		btnLimitUsage.setEnabled(false);
+		btnNoLimit.setEnabled(false);
+
+		txtCpu.setEnabled(true);
+		txtMemory.setEnabled(true);
+	}
+
+	private void restrictAhenkDeselect() {
+		txtCmd.setText("");
+		txtCmd.setEnabled(true);
+
+		cmbPrivilege.select(2);
+		cmbPrivilege.setEnabled(true);
+
+		btnLimitUsage.setSelection(false);
+		btnNoLimit.setSelection(true);
+
+		btnLimitUsage.setEnabled(true);
+		btnNoLimit.setEnabled(true);
+
+		txtCpu.setEnabled(false);
+		txtMemory.setEnabled(false);
+
+		txtCpu.setText("");
+		txtMemory.setText("");
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void okPressed() {
-
-		
 
 		if (txtCmd.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("PLEASE_ENTER_CMD_PATH"));
@@ -354,8 +355,9 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			Notifier.error(null, Messages.getString("FILL_AT_LEAST_ONE_RESOURCE_USAGE_VALUE"));
 			return;
 		}
-		
-		if(!txtCmd.getText().isEmpty() && "/opt/ahenk/ahenkd.py".equals(txtCmd.getText())&&(btnCheckBoxAhenkLimit.getSelection()==false)){
+
+		if (!txtCmd.getText().isEmpty() && "/opt/ahenk/ahenkd".equals(txtCmd.getText())
+				&& (btnCheckBoxAhenkLimit.getSelection() == false)) {
 			Notifier.error(null, Messages.getString("PLEASE_ENTER_VALID_CMD_PATH"));
 			return;
 		}
