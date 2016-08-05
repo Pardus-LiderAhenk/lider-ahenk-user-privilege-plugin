@@ -45,6 +45,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 	private Combo cmbPrivilege;
 	private Button btnLimitUsage;
 	private Button btnNoLimit;
+	private Button btnCheckBoxAhenkLimit;
 	private Text txtCpu;
 	private Text txtMemory;
 
@@ -113,6 +114,46 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		} else {
 			cmbPrivilege.select(0);
 		}
+		
+		
+		cmbPrivilege.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				if(((Combo) e.getSource()).getSelectionIndex()==1){
+					
+					btnLimitUsage.setSelection(false);
+					btnNoLimit.setSelection(true);
+					
+					btnLimitUsage.setEnabled(false);
+					btnNoLimit.setEnabled(false);
+					
+					txtCpu.setEnabled(false);
+					txtMemory.setEnabled(false);
+					
+					txtCpu.setText("");
+					txtMemory.setText("");
+				}
+				else{
+
+					btnLimitUsage.setSelection(true);
+					btnNoLimit.setSelection(false);
+					
+					btnLimitUsage.setEnabled(true);
+					btnNoLimit.setEnabled(true);
+					
+					txtCpu.setEnabled(true);
+					txtMemory.setEnabled(true);
+					
+				}
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
 
 		Composite cmpRadio = new Composite(cmpMain, SWT.NONE);
 		GridLayout layout = new GridLayout(2, true);
@@ -138,6 +179,11 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 				if (btnNoLimit.getSelection()) {
 					txtCpu.setEnabled(false);
 					txtMemory.setEnabled(false);
+					
+					txtCpu.setText("");
+					txtMemory.setText("");
+					
+					
 				} else {
 					txtCpu.setEnabled(true);
 					txtMemory.setEnabled(true);
@@ -148,7 +194,75 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 			}
 		});
+		
+		
+		//limit only ahenk service
+		
+		Composite ahenkResource = new Composite(cmpMain, SWT.NONE);
+		ahenkResource.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		ahenkResource.setLayout(new GridLayout(2, false));
+		
+		Label ahenkResourceUsage = new Label(ahenkResource, SWT.NONE);
+		ahenkResourceUsage.setText(Messages.getString("AHENK_RESOURCE_USAGE_VALUES"));
+		
+		btnCheckBoxAhenkLimit = new Button(ahenkResource, SWT.CHECK);
+		btnCheckBoxAhenkLimit.setText("");
+		
+		
+		btnCheckBoxAhenkLimit.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+				if (((Button) e.getSource()).getSelection()==true){
+					txtCmd.setText("/opt/ahenk/ahenkd.py");
+					txtCmd.setEnabled(false);
+					
+					cmbPrivilege.select(2);
+					cmbPrivilege.setEnabled(false);
+					
+					btnLimitUsage.setSelection(true);
+					btnNoLimit.setSelection(false);
+					
+					btnLimitUsage.setEnabled(false);
+					btnNoLimit.setEnabled(false);
+					
+					txtCpu.setEnabled(true);
+					txtMemory.setEnabled(true);
+					
+				}
+				else{
+					txtCmd.setText("");
+					txtCmd.setEnabled(true);
+					
+					cmbPrivilege.select(2);
+					cmbPrivilege.setEnabled(true);
+					
+					btnLimitUsage.setSelection(false);
+					btnNoLimit.setSelection(true);
+					
+					
+					btnLimitUsage.setEnabled(true);
+					btnNoLimit.setEnabled(true);
+					
+					txtCpu.setEnabled(false);
+					txtMemory.setEnabled(false);
+					
+					txtCpu.setText("");
+					txtMemory.setText("");
+					
+				}
+				
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				
+			}
+		});
 
+		
+		
 		Composite cmpResource = new Composite(cmpMain, SWT.NONE);
 		cmpResource.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		cmpResource.setLayout(new GridLayout(2, false));
@@ -231,12 +345,18 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 	@Override
 	protected void okPressed() {
 
-		setReturnCode(OK);
+		
 
 		if (txtCmd.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("PLEASE_ENTER_CMD_PATH"));
+			return;
 		} else if (btnLimitUsage.getSelection() && txtCpu.getText().isEmpty() && txtMemory.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("FILL_AT_LEAST_ONE_RESOURCE_USAGE_VALUE"));
+			return;
+		}
+		
+		if(!txtCmd.getText().isEmpty() && "/opt/ahenk/ahenkd.py".equals(txtCmd.getText())){
+			Notifier.error(null, Messages.getString("PLEASE_ENTER_VALID_CMD_PATH"));
 			return;
 		}
 
@@ -286,6 +406,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		tableViewer.setInput(items);
 		tableViewer.refresh();
 
+		setReturnCode(OK);
 		close();
 	}
 
