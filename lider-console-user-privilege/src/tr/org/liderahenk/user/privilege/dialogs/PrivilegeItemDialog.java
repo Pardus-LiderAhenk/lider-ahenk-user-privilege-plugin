@@ -355,7 +355,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			return;
 		}
 		
-		if(!txtCmd.getText().isEmpty() && "/opt/ahenk/ahenkd.py".equals(txtCmd.getText())){
+		if(!txtCmd.getText().isEmpty() && "/opt/ahenk/ahenkd.py".equals(txtCmd.getText())&&(btnCheckBoxAhenkLimit.getSelection()==false)){
 			Notifier.error(null, Messages.getString("PLEASE_ENTER_VALID_CMD_PATH"));
 			return;
 		}
