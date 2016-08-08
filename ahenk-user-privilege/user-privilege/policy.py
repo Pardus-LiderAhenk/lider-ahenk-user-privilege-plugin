@@ -55,7 +55,7 @@ class UserPrivilege(AbstractPlugin):
             if username is not None:
                 self.logger.debug('[UserPrivilege] Getting profile data.')
                 data = json.loads(self.profile_data)
-                privilege_items = json.loads(json.dumps(data['items']))
+                privilege_items = data['items']
 
                 # Lists that will keep user names for cleaning on logout
                 add_user_list = list()
@@ -125,6 +125,7 @@ class UserPrivilege(AbstractPlugin):
                                                                                              limit_resource_usage,
                                                                                              cpu, memory,
                                                                                              command_path_list)
+
                                 if wrapper_result == 0:
                                     self.logger.debug('[UserPrivilege] Wrapper created successfully.')
                                     self.logger.debug('[UserPrivilege] Adding item result to result_message.')
@@ -293,16 +294,8 @@ class UserPrivilege(AbstractPlugin):
             'mv ' + str(command_path) + ' ' + str(command_path) + '-ahenk')
 
         if result_code == 0:
-            self.logger.debug('[UserPrivilege] Executing: "touch ' + str(command_path) + '"')
-            self.execute('touch ' + str(command_path))
-
-            self.logger.debug('[UserPrivilege] Executing: "chmod 755 ' + str(command_path) + '"')
-            self.execute('chmod 755 ' + str(command_path))
 
             command_path_str = str(command_path).strip()
-
-            self.logger.debug('[UserPrivilege] Opening file: ' + command_path_str + ' to write.')
-            command_file = open(command_path_str, 'w')
 
             line = 'if [ \( "$USER" = "root" \) -o \( "$USER" = "" \) ]; then \n' + str(command_path) + '-ahenk'
             if limit_resource_usage:
@@ -316,10 +309,9 @@ class UserPrivilege(AbstractPlugin):
             line += 'fi'
 
             self.logger.debug('[UserPrivilege] Writing to newly created file: ' + command_path_str)
-            command_file.write(line)
+            self.write_file(command_path_str, line)
+            self.set_permission(command_path_str, "755")
 
-            self.logger.debug('[UserPrivilege] Closing file: ' + command_path_str)
-            command_file.close()
             self.logger.debug('[UserPrivilege] Command created successfully ' + command_path)
 
             self.logger.debug('[UserPrivilege] Adding command to command_path_list')
