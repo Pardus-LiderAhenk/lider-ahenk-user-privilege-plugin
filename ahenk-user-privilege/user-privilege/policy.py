@@ -67,16 +67,21 @@ class UserPrivilege(AbstractPlugin):
                     self.logger.debug('[UserPrivilege] Iterating over privilege items.')
 
                     for item in privilege_items:
-                        cmd = item['cmd']
-                        if cmd == "/opt/ahenk/ahenkd":
+                        command_path = item['cmd'].strip()
+                        if command_path == "/opt/ahenk/ahenkd":
                             self.limit_ahenk(item)
+                            continue
+
+                        if self.is_exist(command_path) is False:
+                            self.logger.warning(
+                                '[UserPrivilege] {0} command path not found. User privilege execution will not processed for this command.'.format(
+                                    command_path))
                             continue
 
                         polkit_status = item['polkitStatus']
 
                         # Create polkit for each item
                         if polkit_status == 'privileged':
-                            command_path = cmd.strip()
 
                             self.logger.debug('[UserPrivilege] Parsing command.')
                             command = str(self.parse_command(command_path))
@@ -135,7 +140,6 @@ class UserPrivilege(AbstractPlugin):
                                     result_message += command_path + ' | Ayrıcalıklı | Başarısız, '
 
                         elif polkit_status == 'unprivileged':
-                            command_path = cmd.strip()
 
                             self.logger.debug('[UserPrivilege] Parsing command.')
                             command = str(self.parse_command(command_path))
@@ -193,7 +197,6 @@ class UserPrivilege(AbstractPlugin):
                                     result_message += command_path + ' | Ayrıcalıksız | Başarısız, '
 
                         elif polkit_status == 'na':
-                            command_path = cmd.strip()
 
                             self.logger.debug(
                                 '[UserPrivilege] polkit_status is: na, no action or pkla will be created.')

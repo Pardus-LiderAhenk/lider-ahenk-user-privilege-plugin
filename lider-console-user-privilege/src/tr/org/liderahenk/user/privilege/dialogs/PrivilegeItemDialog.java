@@ -393,6 +393,10 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 				item.setMemory(null);
 			}
 		}
+		else{
+			item.setCpu(null);
+			item.setMemory(null);
+		}
 
 		// Get previous items...
 		List<PrivilegeItem> items = (List<PrivilegeItem>) tableViewer.getInput();
