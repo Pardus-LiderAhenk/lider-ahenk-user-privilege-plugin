@@ -297,15 +297,16 @@ class UserPrivilege(AbstractPlugin):
 
             command_path_str = str(command_path).strip()
 
-            line = 'if [ \( "$USER" = "root" \) -o \( "$USER" = "" \) ]; then \n' + str(command_path) + '-ahenk'
+            line = 'if [ \( "$USER" = "root" \) -o \( "$USER" = "" \) ]; then \n' + str(command_path) + '-ahenk $@'
             if limit_resource_usage:
                 line += '\nelse\n'
                 line += self.add_resource_limits(command_path, polkit_status, cpu, memory)
             else:
                 if polkit_status == 'na':
-                    line = line + '\nelse\n' + str(command_path) + '-ahenk &\n'
+                    line = line + '\nelse\n' + str(command_path) + '-ahenk $@\n'
                 else:
-                    line = line + '\nelse\n' + 'pkexec --user $USER ' + str(command_path) + '-ahenk\n'
+                    line += '\nelse\nCOMMAND=\"' + str(command_path) + '-ahenk $@\"\n'
+                    line += 'pkexec --user $USER $COMMAND\n'
             line += 'fi'
 
             self.logger.debug('[UserPrivilege] Writing to newly created file: ' + command_path_str)
@@ -328,27 +329,21 @@ class UserPrivilege(AbstractPlugin):
         if cpu and memory is not None:
             self.logger.debug('[UserPrivilege] Adding both CPU and memory limits.')
             lines = 'ulimit -Sv ' + str(memory) + '\n'
-            if polkit_status == 'na':
-                lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
-            else:
-                lines = lines + 'nohup pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+            lines += 'COMMAND=\"' + str(command_path) + '-ahenk $@\"\n'
+            lines += 'nohup pkexec --user $USER $COMMAND &\n'
             lines += 'U_PID=$!\n'
-            lines = lines + 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
+            lines += 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
         elif cpu is not None:
             self.logger.debug('[UserPrivilege] Adding only CPU limit.')
-            if polkit_status == 'na':
-                lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
-            else:
-                lines = lines + 'nohup pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+            lines = 'COMMAND=\"' + str(command_path) + '-ahenk $@\"\n'
+            lines += 'nohup pkexec --user $USER $COMMAND &\n'
             lines += 'U_PID=$!\n'
-            lines = lines + 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
+            lines += 'cpulimit -p $U_PID -l ' + str(cpu) + ' -z\n'
         elif memory is not None:
             self.logger.debug('[UserPrivilege] Adding only memory limit.')
             lines = 'ulimit -Sv ' + str(memory) + '\n'
-            if polkit_status == 'na':
-                lines = lines + 'nohup ' + str(command_path) + '-ahenk &\n'
-            else:
-                lines = lines + 'nohup pkexec --user $USER ' + str(command_path) + '-ahenk &\n'
+            lines += 'COMMAND=\"' + str(command_path) + '-ahenk $@\"\n'
+            lines += 'nohup pkexec --user $USER $COMMAND &\n'
 
         return lines
 
