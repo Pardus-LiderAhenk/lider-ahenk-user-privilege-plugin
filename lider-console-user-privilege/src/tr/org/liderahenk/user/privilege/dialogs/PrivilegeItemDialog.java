@@ -356,7 +356,9 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		if (cmbCommand.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("PLEASE_ENTER_CMD_PATH"));
 			return;
-		} else if (btnLimitUsage.getSelection() && txtCpu.getText().isEmpty() && txtMemory.getText().isEmpty()) {
+		}
+
+		if (btnLimitUsage.getSelection() && txtCpu.getText().isEmpty() && txtMemory.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("FILL_AT_LEAST_ONE_RESOURCE_USAGE_VALUE"));
 			return;
 		}
@@ -386,11 +388,19 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 
 		if (btnLimitUsage.getSelection()) {
 			if (!txtCpu.getText().isEmpty()) {
-				item.setCpu(Integer.parseInt(txtCpu.getText() + ""));
+				item.setCpu(Integer.parseInt(txtCpu.getText()));
+			} else {
+				item.setCpu(null);
 			}
 			if (!txtMemory.getText().isEmpty()) {
-				item.setMemory(Integer.parseInt(txtMemory.getText() + ""));
+				item.setMemory(Integer.parseInt(txtMemory.getText()));
+			} else {
+				item.setMemory(null);
 			}
+		}
+		else{
+			item.setCpu(null);
+			item.setMemory(null);
 		}
 
 		// Get previous items...
