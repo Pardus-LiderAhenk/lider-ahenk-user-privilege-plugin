@@ -41,13 +41,14 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 	// Table
 	private TableViewer tableViewer;
 	// Widgets
-	private Text txtCmd;
+	// private Text txtCmd;
 	private Combo cmbPrivilege;
 	private Button btnLimitUsage;
 	private Button btnNoLimit;
 	private Button btnCheckBoxAhenkLimit;
 	private Text txtCpu;
 	private Text txtMemory;
+	private Combo cmbCommand;
 
 	// Combo values & i18n labels
 	private final String[] statusArr = new String[] { "Privileged", "Unprivileged", "N/A" };
@@ -84,12 +85,16 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		Label lblVendor = new Label(cmpCommand, SWT.NONE);
 		lblVendor.setText(Messages.getString("COMMAND_PATH"));
 
-		txtCmd = new Text(cmpCommand, SWT.BORDER);
-		txtCmd.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false));
+		cmbCommand = new Combo(cmpCommand, SWT.DROP_DOWN);
+		cmbCommand.setItems(new String[] { "/usr/bin/firefox", "/opt/google/chrome/chrome", "/usr/bin/thunderbird",
+				"/usr/lib/libreoffice/program/soffice.bin", "/opt/master-pdf-editor-3/masterpdfeditor3", "/usr/bin/xfburn", "/usr/bin/vlc" });
+		cmbCommand.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false));
 		if (item != null && item.getCmd() != null) {
-			txtCmd.setText(item.getCmd());
+			cmbCommand.setText(item.getCmd());
+		} else {
+			cmbCommand.select(0);
 		}
-		txtCmd.setMessage(Messages.getString("EG_FIREFOX"));
+		cmbCommand.setToolTipText(Messages.getString("EG_FIREFOX"));
 
 		Label lblPrivilege = new Label(cmpCommand, SWT.NONE);
 		lblPrivilege.setText(Messages.getString("PRIVILEGE"));
@@ -296,7 +301,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		}
 
 		if (item != null && item.getCmd() != null) {
-			txtCmd.setText(item.getCmd());
+			cmbCommand.setText(item.getCmd());
 			if ("/opt/ahenk/ahenkd".equals(item.getCmd())) {
 				System.out.println("komut ahenk");
 				btnCheckBoxAhenkLimit.setSelection(true);
@@ -308,8 +313,8 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 	}
 
 	private void restrictAhenkSelect() {
-		txtCmd.setText("/opt/ahenk/ahenkd");
-		txtCmd.setEnabled(false);
+		cmbCommand.setText("/opt/ahenk/ahenkd");
+		cmbCommand.setEnabled(false);
 
 		cmbPrivilege.select(2);
 		cmbPrivilege.setEnabled(false);
@@ -325,8 +330,8 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 	}
 
 	private void restrictAhenkDeselect() {
-		txtCmd.setText("");
-		txtCmd.setEnabled(true);
+		cmbCommand.setText("");
+		cmbCommand.setEnabled(true);
 
 		cmbPrivilege.select(2);
 		cmbPrivilege.setEnabled(true);
@@ -348,7 +353,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 	@Override
 	protected void okPressed() {
 
-		if (txtCmd.getText().isEmpty()) {
+		if (cmbCommand.getText().isEmpty()) {
 			Notifier.error(null, Messages.getString("PLEASE_ENTER_CMD_PATH"));
 			return;
 		} else if (btnLimitUsage.getSelection() && txtCpu.getText().isEmpty() && txtMemory.getText().isEmpty()) {
@@ -356,7 +361,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			return;
 		}
 
-		if (!txtCmd.getText().isEmpty() && "/opt/ahenk/ahenkd".equals(txtCmd.getText())
+		if (!cmbCommand.getText().isEmpty() && "/opt/ahenk/ahenkd".equals(cmbCommand.getText())
 				&& (btnCheckBoxAhenkLimit.getSelection() == false)) {
 			Notifier.error(null, Messages.getString("PLEASE_ENTER_VALID_CMD_PATH"));
 			return;
@@ -368,7 +373,7 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 			editMode = false;
 		}
 		// Set values
-		item.setCmd(txtCmd.getText());
+		item.setCmd(cmbCommand.getText());
 		if (cmbPrivilege.getSelectionIndex() == 0) {
 			item.setPolkitStatus(UserPrivilegeConstants.PARAMETERS.PRIVILEGED);
 		} else if (cmbPrivilege.getSelectionIndex() == 1) {
