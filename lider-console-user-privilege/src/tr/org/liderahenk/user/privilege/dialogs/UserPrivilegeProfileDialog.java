@@ -261,7 +261,14 @@ public class UserPrivilegeProfileDialog implements IProfileDialog {
 		privilegeCol.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				return ((PrivilegeItem) element).getPolkitStatus();
+				 String status = ((PrivilegeItem) element).getPolkitStatus();
+				 if ("privileged".equalsIgnoreCase(status)) {
+					 return Messages.getString("PRIVILEGED");
+				 } else if ("unprivileged".equalsIgnoreCase(status)) {
+					 return Messages.getString("UNPRIVILEGED");
+				 } else {
+					 return Messages.getString("N/A");
+				 }
 			}
 		});
 
@@ -270,7 +277,8 @@ public class UserPrivilegeProfileDialog implements IProfileDialog {
 		limitResourceCol.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				return ((PrivilegeItem) element).getLimitResourceUsage().toString();
+				return ((PrivilegeItem) element).getLimitResourceUsage().booleanValue() ? Messages.getString("YES")
+						: Messages.getString("NO");
 			}
 		});
 
