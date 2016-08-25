@@ -303,7 +303,6 @@ public class PrivilegeItemDialog extends DefaultLiderTitleAreaDialog {
 		if (item != null && item.getCmd() != null) {
 			cmbCommand.setText(item.getCmd());
 			if ("/opt/ahenk/ahenkd".equals(item.getCmd())) {
-				System.out.println("komut ahenk");
 				btnCheckBoxAhenkLimit.setSelection(true);
 				restrictAhenkSelect();
 			}
