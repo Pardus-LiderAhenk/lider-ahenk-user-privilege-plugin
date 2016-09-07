@@ -21,7 +21,7 @@ echo "lider & lider-console modules built successfully."
 # Generate Ahenk package
 echo "Generating Ahenk package..."
 cd "$PRJ_ROOT_PATH"/ahenk-user-privilege
-dpkg-buildpackage -b
+dpkg-buildpackage -b -uc
 echo "Generated Ahenk package"
 
 EXPORT_PATH=/tmp/lider-ahenk-user-privilege-plugin

@@ -22,35 +22,14 @@
    
    <extension
        point="org.eclipse.ui.handlers">
-
-		<!-- Profile handler -->
        	<handler
             class="tr.org.liderahenk.user.privilege.handlers.UserPrivilegeProfileHandler"
             commandId="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile">
-           <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-		   <!-- <enabledWhen>
-				<and>
-		          <with
-		                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.available">
-		             <equals
-		                   value="true">
-		             </equals>
-		          </with>
-				<with
-	                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-	             	<equals
-		                   value="true">
-		            </equals>
-	          	</with>
-		       </and>
-		    </enabledWhen> -->        
       	</handler>
   </extension>
   
   <extension
          point="org.eclipse.ui.menus">
-
-		<!-- Add menu command for "profile definition" dialog -->
 		<menuContribution
       		allPopups="false"
             locationURI="menu:tr.org.liderahenk.liderconsole.menus.ProfileDefinition?after=additions">
@@ -59,33 +38,6 @@
                   id="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile"
                   tooltip="%command.profile"
                   icon="icons/16/user-privilege.png">
-                  <!-- TODO Uncomment this after updating/fixing LiderSourceProvider -->
-				  <!-- <visibleWhen>
-					   <and>
-			                <iterate operator="or">		
-			                	<or>
-							  	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isSearchSelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					          	<with
-					                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isEntrySelected">
-						             <equals
-						                   value="true">
-						             </equals>
-					          	</with>
-					        	</or>
-					        </iterate>
-							<with
-				                variable="tr.org.liderahenk.liderconsole.core.sourceproviders.main.isAhenkSelected">
-				             	<equals
-					                   value="true">
-					            </equals>
-				          	</with>
-					    </and>
-					</visibleWhen> -->               
            		</command>
 		</menuContribution>
   </extension>
@@ -94,6 +46,12 @@
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.policymenu">
   		<policyItem label="%command.profile" pluginName="user-privilege" pluginVersion="1.0.0" profileCommandId="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile" />
+  	</extension>
+  	
+	<!-- Add extension point contribution for i18n messages -->
+	<extension
+  		point="tr.org.liderahenk.liderconsole.core.i18n">
+		<plugin name="user-privilege" label="%plugin.label" />
   	</extension>
   	
 </plugin>
