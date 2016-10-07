@@ -19,16 +19,16 @@ class UserPrivilegeSafeMode(AbstractPlugin):
         self.logger = self.get_logger()
 
     def handle_safe_mode(self):
-        self.logger.debug('[UserPrivilege-Safe] Handling safe mode.')
+        self.logger.debug('Handling safe mode.')
 
-        self.logger.debug('[UserPrivilege-Safe] Getting plugin path.')
+        self.logger.debug('Getting plugin path.')
         p_path = self.Ahenk.plugins_path()
-        privilege_file = p_path + 'user-privilege/privilege.changes/' + self.username + '.changes'
+        privilege_file = p_path + 'user-privilege/1.0.0/privilege.changes/' + self.username + '.changes'
 
         if self.is_exist(privilege_file):
-            self.logger.debug('[UserPrivilege-Safe] Reading privilege_file: ' + privilege_file)
+            self.logger.debug('Reading privilege_file: ' + privilege_file)
             with open(privilege_file) as data_file:
-                self.logger.debug('[UserPrivilege-Safe] Creating object from JSON data file.')
+                self.logger.debug('Creating object from JSON data file.')
                 data = json.load(data_file)
 
             command_path_list = data['command_path_list']
@@ -36,36 +36,36 @@ class UserPrivilegeSafeMode(AbstractPlugin):
             deleted_user_list = data['deleted_user_list']
 
             if len(command_path_list) != 0:
-                self.logger.debug('[UserPrivilege-Safe] Removing wrapper files and renaming original files.')
+                self.logger.debug('Removing wrapper files and renaming original files.')
 
                 for command_path in command_path_list:
                     if os.path.exists(command_path + '-ahenk'):
-                        self.logger.debug('[UserPrivilege-Safe] Executing: ' + '"rm ' + command_path + '"')
+                        self.logger.debug('Executing: ' + '"rm ' + command_path + '"')
                         self.execute('rm ' + command_path)
                         self.logger.debug(
-                            '[UserPrivilege-Safe] Executing: ' + '"mv ' + command_path + '-ahenk ' + command_path + '"')
+                            'Executing: ' + '"mv ' + command_path + '-ahenk ' + command_path + '"')
                         self.execute('mv ' + command_path + '-ahenk ' + command_path)
                     else:
                         self.logger.debug(
-                            '[UserPrivilege-Safe] File will not be deleted because ' + command_path + 'does not exists.')
+                            'File will not be deleted because ' + command_path + 'does not exists.')
 
             if len(added_user_list) != 0:
-                self.logger.debug('[UserPrivilege-Safe] Removing user from groups that it has been added in advance.')
+                self.logger.debug('Removing user from groups that it has been added in advance.')
 
                 for group_name in added_user_list:
                     self.logger.debug(
-                        '[UserPrivilege-Safe] Executing: ' + '"deluser ' + str(self.username) + ' ' + group_name + '"')
+                        'Executing: ' + '"deluser ' + str(self.username) + ' ' + group_name + '"')
                     self.execute('deluser ' + str(self.username) + ' ' + group_name)
 
             if len(deleted_user_list) != 0:
-                self.logger.debug('[UserPrivilege-Safe] Adding user to groups that it has been removed in advance.')
+                self.logger.debug('Adding user to groups that it has been removed in advance.')
 
                 for group_name in deleted_user_list:
                     self.logger.debug(
-                        '[UserPrivilege-Safe] Executing: ' + '"adduser ' + str(self.username) + ' ' + group_name + '"')
+                        'Executing: ' + '"adduser ' + str(self.username) + ' ' + group_name + '"')
                     self.execute('adduser ' + str(self.username) + ' ' + group_name)
         else:
-            self.logger.debug('[UserPrivilege-Safe] Changes file not found for {} user.'.format(self.username))
+            self.logger.debug('Changes file not found for {} user.'.format(self.username))
 
 
 def handle_mode(context):

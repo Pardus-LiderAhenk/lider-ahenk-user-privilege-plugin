@@ -22,12 +22,12 @@ class UserPrivilegeShutdownMode(AbstractPlugin):
 
         p_path = self.Ahenk.plugins_path()
 
-        privilege_file = p_path + 'user-privilege/privilege.changes/' + username + '.changes'
+        privilege_file = p_path + 'user-privilege/1.0.0/privilege.changes/' + username + '.changes'
 
         if self.is_exist(privilege_file):
-            self.logger.debug('[UserPrivilege-Shutdown] Reading privilege_file: ' + privilege_file)
+            self.logger.debug('Reading privilege_file: ' + privilege_file)
             with open(privilege_file) as data_file:
-                self.logger.debug('[UserPrivilege-Shutdown] Creating object from JSON data file.')
+                self.logger.debug('Creating object from JSON data file.')
                 data = json.load(data_file)
 
             command_path_list = data['command_path_list']
@@ -35,59 +35,59 @@ class UserPrivilegeShutdownMode(AbstractPlugin):
             deleted_user_list = data['deleted_user_list']
 
             if len(command_path_list) != 0:
-                self.logger.debug('[UserPrivilege-Shutdown] Removing wrapper files and renaming original files.')
+                self.logger.debug('Removing wrapper files and renaming original files.')
 
                 for command_path in command_path_list:
                     if os.path.exists(command_path + '-ahenk'):
-                        self.logger.debug('[UserPrivilege-Shutdown] Executing: ' + '"rm ' + command_path + '"')
+                        self.logger.debug('Executing: ' + '"rm ' + command_path + '"')
                         self.execute('rm ' + command_path)
                         self.logger.debug(
-                            '[UserPrivilege-Shutdown] Executing: ' + '"mv ' + command_path + '-ahenk ' + command_path + '"')
+                            'Executing: ' + '"mv ' + command_path + '-ahenk ' + command_path + '"')
                         self.execute('mv ' + command_path + '-ahenk ' + command_path)
                     else:
                         self.logger.debug(
-                            '[UserPrivilege-Shutdown] File will not be deleted because ' + command_path + 'does not exists.')
+                            'File will not be deleted because ' + command_path + 'does not exists.')
 
             if len(added_user_list) != 0:
                 self.logger.debug(
-                    '[UserPrivilege-Shutdown] Removing user from groups that it has been added in advance.')
+                    'Removing user from groups that it has been added in advance.')
 
                 for group_name in added_user_list:
                     self.logger.debug(
-                        '[UserPrivilege-Shutdown] Executing: ' + '"deluser ' + str(username) + ' ' + group_name + '"')
+                        'Executing: ' + '"deluser ' + str(username) + ' ' + group_name + '"')
                     self.execute('deluser ' + str(username) + ' ' + group_name)
 
             if len(deleted_user_list) != 0:
-                self.logger.debug('[UserPrivilege-Shutdown] Adding user to groups that it has been removed in advance.')
+                self.logger.debug('Adding user to groups that it has been removed in advance.')
 
                 for group_name in deleted_user_list:
                     self.logger.debug(
-                        '[UserPrivilege-Shutdown] Executing: ' + '"adduser ' + str(username) + ' ' + group_name + '"')
+                        'Executing: ' + '"adduser ' + str(username) + ' ' + group_name + '"')
                     self.execute('adduser ' + str(username) + ' ' + group_name)
         else:
-            self.logger.debug('[UserPrivilege-Shutdown] Changes file not found for {} user.'.format(username))
+            self.logger.debug('Changes file not found for {} user.'.format(username))
 
     def handle_shutdown_mode(self):
-        self.logger.debug('[UserPrivilege-Shutdown] Handling shutdown mode.')
+        self.logger.debug('Handling shutdown mode.')
 
-        changes_file_arr = self.Ahenk.plugins_path() + 'user-privilege/privilege.changes/*.changes'
+        changes_file_arr = self.Ahenk.plugins_path() + 'user-privilege/1.0.0/privilege.changes/*.changes'
         change_files = glob.glob(changes_file_arr)
 
         if change_files is not None and len(change_files) > 0:
-            self.logger.debug('[UserPrivilege-Shutdown] Some user changes found.')
+            self.logger.debug('Some user changes found.')
             for file in change_files:
-                tmp = file.replace(self.Ahenk.plugins_path() + 'user-privilege/privilege.changes/', '')
+                tmp = file.replace(self.Ahenk.plugins_path() + 'user-privilege/1.0.0/privilege.changes/', '')
                 tmp = tmp.replace('.changes', '')
-                self.logger.debug('[UserPrivilege-Shutdown] Handling init for user {0}'.format(tmp))
+                self.logger.debug('Handling init for user {0}'.format(tmp))
                 try:
                     self.handle_for_this_user(tmp)
-                    self.logger.debug('[UserPrivilege-Shutdown] Handled init for user {0}'.format(tmp))
+                    self.logger.debug('Handled init for user {0}'.format(tmp))
                 except Exception as e:
                     self.logger.error(
-                        '[UserPrivilege-Shutdown] A problem occurred while handling shutdown action for user {0}. Error Message: {1}'.format(
+                        'A problem occurred while handling shutdown action for user {0}. Error Message: {1}'.format(
                             tmp, str(e)))
         else:
-            self.logger.debug('[UserPrivilege-Shutdown] Changes files not found.')
+            self.logger.debug('Changes files not found.')
 
 
 def handle_mode(context):
