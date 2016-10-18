@@ -351,7 +351,7 @@ class UserPrivilege(AbstractPlugin):
         return lines
 
     def create_logout_files(self, username, path_of_plugin, add_user_list, del_user_list, command_path_list):
-        path_of_changes = path_of_plugin + 'user-privilege/1.0.0/privilege.changes'
+        path_of_changes = path_of_plugin + 'user-privilege/privilege.changes'
         if not os.path.exists(path_of_changes):
             self.create_directory(path_of_changes)
 

@@ -23,7 +23,7 @@ class UserPrivilegeSafeMode(AbstractPlugin):
 
         self.logger.debug('Getting plugin path.')
         p_path = self.Ahenk.plugins_path()
-        privilege_file = p_path + 'user-privilege/1.0.0/privilege.changes/' + self.username + '.changes'
+        privilege_file = p_path + 'user-privilege/privilege.changes/' + self.username + '.changes'
 
         if self.is_exist(privilege_file):
             self.logger.debug('Reading privilege_file: ' + privilege_file)

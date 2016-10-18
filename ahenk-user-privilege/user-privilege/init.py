@@ -22,7 +22,7 @@ class UserPrivilegeInitMode(AbstractPlugin):
 
         p_path = self.Ahenk.plugins_path()
 
-        privilege_file = p_path + 'user-privilege/1.0.0/privilege.changes/' + username + '.changes'
+        privilege_file = p_path + 'user-privilege/privilege.changes/' + username + '.changes'
 
         if self.is_exist(privilege_file):
             self.logger.debug('Reading privilege_file: ' + privilege_file)
@@ -69,13 +69,13 @@ class UserPrivilegeInitMode(AbstractPlugin):
     def handle_init_mode(self):
         self.logger.debug('Handling init mode.')
 
-        changes_file_arr = self.Ahenk.plugins_path() + 'user-privilege/1.0.0/privilege.changes/*.changes'
+        changes_file_arr = self.Ahenk.plugins_path() + 'user-privilege/privilege.changes/*.changes'
         change_files = glob.glob(changes_file_arr)
 
         if change_files is not None and len(change_files) > 0:
             self.logger.debug('Some user changes found.')
             for file in change_files:
-                tmp = file.replace(self.Ahenk.plugins_path() + 'user-privilege/1.0.0/privilege.changes/', '')
+                tmp = file.replace(self.Ahenk.plugins_path() + 'user-privilege/privilege.changes/', '')
                 tmp = tmp.replace('.changes', '')
                 self.logger.debug('Handling init for user {0}'.format(tmp))
                 try:
