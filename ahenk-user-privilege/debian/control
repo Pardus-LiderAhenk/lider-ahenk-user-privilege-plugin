@@ -7,7 +7,7 @@ Standards-Version: 3.9.6
 Homepage: http://www.liderahenk.org.tr
 
 Package: ahenk-user-privilege
-Version: 1.0.0
+Version: 1.0.0-alfa
 Architecture: any
 Depends: python3 (>= 3), cpulimit, policykit-1
 Description: Lider Ahenk user privilege (polkit) plugin
