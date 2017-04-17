@@ -13,11 +13,7 @@
             id="tr.org.liderahenk.liderconsole.commands.UserPrivilegeProfile"            
             name="%command.profile">
       </command>
-      <command
-            categoryId="tr.org.liderahenk.liderconsole.commands.category"
-            id="tr.org.liderahenk.liderconsole.commands.UserPrivilegeTask"            
-            name="%command.task">
-      </command>
+    
    </extension>
    
    <extension
