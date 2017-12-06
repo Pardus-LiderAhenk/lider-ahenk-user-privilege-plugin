@@ -33,7 +33,7 @@ User privilege (polkit) plugin for [Lider Ahenk project](http://www.liderahenk.o
 
 #### Ahenk
 
-1. Create a soft link for _ahenk-user-privilege/user-privilege_ directory via `sudo ln -s lider-ahenk-user-privilege-plugin/ahenk-user-privilege/user-privilege/ /opt/ahenk/plugins`
+1. Create a soft link for _ahenk-user-privilege/user-privilege_ directory via `sudo ln -s lider-ahenk-user-privilege-plugin/ahenk-user-privilege/user-privilege/ /usr/share/ahenk/plugins`
 
 ## Contribution
 
